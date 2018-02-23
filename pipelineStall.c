@@ -23,10 +23,8 @@ int pipelineControl(const int_reg_fd_t *f, const int_reg_de_t *d, const int_reg_
     ||(f->rA == d->dstM && f->rA != R_NONE)
     ||(f->iCode == I_CALL)
     )
-     && bubble_position < -1 && first_call != 1)
+     && bubble_position < 0 && first_call != 1)
     {
-
-      bubble_position = 3;
 
       F->status = ST_STALLED;
       F->PC = f->nextPC;
@@ -39,16 +37,15 @@ int pipelineControl(const int_reg_fd_t *f, const int_reg_de_t *d, const int_reg_
       *M = *e;
       *W = *m;
 
-      bubble_position--;
+      bubble_position = 3;
     }
   else if((f->iCode == I_RET
 	   ||(f->rB == e->dstE && f->rB != R_NONE && f->iCode != I_IRMOVQ && f->iCode != I_RRMVXX)
 	   ||(f->rA == e->dstE && f->rA != R_NONE)
 	   ||(f->rA == e->dstM && f->rA != R_NONE)
 	   ||(f->rB == e->dstM && f->rB != R_NONE))
-	  && bubble_position < -1)
+	  && bubble_position < 0)
     {
-      bubble_position = 2;
 
       F->status = ST_STALLED;
       F->PC = f->nextPC;
@@ -61,16 +58,14 @@ int pipelineControl(const int_reg_fd_t *f, const int_reg_de_t *d, const int_reg_
       *M = *e;
       *W = *m;
 
-      bubble_position--;
-      
+      bubble_position = 2;      
     }
   else if(((f->rB==m->dstE && f->rB != R_NONE && f->iCode != I_IRMOVQ && f->iCode != I_RRMVXX)
 	   ||(f->rA == m->dstE && f->rA != R_NONE)
 	   ||(f->rA == m->dstM && f->rA != R_NONE)
 	   ||(f->rB == m->dstM && f->rB != R_NONE))
-	  && bubble_position < -1)
+	  && bubble_position < 0)
     {
-      bubble_position = 1;
 
       F->status = ST_STALLED;
       F->PC = f->nextPC;
@@ -83,12 +78,12 @@ int pipelineControl(const int_reg_fd_t *f, const int_reg_de_t *d, const int_reg_
       *M = *e;
       *W = *m;
 
-      bubble_position--;
+      bubble_position = 1;
     }
-  else if(bubble_position == 2 || bubble_position == 1 || bubble_position == 0)
+  else if(bubble_position <= 3 && bubble_position >= 0 )
     {
 
-      if(bubble_position == -1)
+      if(bubble_position == 0)
 	{
 	  F->PC = f->nextPC;
 	  *D = *f;
